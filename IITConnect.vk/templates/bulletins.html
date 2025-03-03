@@ -1,0 +1,455 @@
+{% extends "layout.html" %}
+
+{% block title %}IITconnect.vk - Bulletins{% endblock %}
+
+{% block content %}
+<div class="container section-container">
+    <h1 class="page-title">Bulletins</h1>
+    {% if user.user_type.value in ['designated', 'admin'] %}
+    <button id="postBulletinBtn" class="btn btn-primary post-bulletin-btn">Post a Bulletin</button>
+    {% endif %}
+    
+    
+    <div class="section-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% if user.user_type.value in ['designated', 'admin'] %}
+        
+        {% endif %}
+
+        <div class="filter-options">
+  <h3>Filter Posts</h3>
+  <form action="{{ url_for('bulletins') }}" method="GET" id="filter-form">
+    <div class="radio-group responsive-radio-group">
+      <label>
+        <input type="radio" name="filter" value="all" {% if filter_option == 'all' %}checked{% endif %}> All Visible Posts
+      </label>
+      <label>
+        <input type="radio" name="filter" value="my_iit" {% if filter_option == 'my_iit' %}checked{% endif %}> Only My IIT
+      </label>
+    </div>
+  </form>
+</div>
+
+        <div class="bulletins-list">
+            {% for bulletin in bulletins %}
+            <div class="bulletin-item" data-bulletin-id="{{ bulletin.id }}">
+  <div class="bulletin-header">
+    <div class="bulletin-poster">
+      {% if bulletin.user.profile_picture %}
+        <img src="{{ url_for('static', filename='uploads/' + bulletin.user.profile_picture) }}" alt="{{ bulletin.user.name }}" class="user-avatar">
+      {% else %}
+        <div class="user-avatar default-avatar">
+          <i class="fas fa-user"></i>
+        </div>
+      {% endif %}
+      <div class="poster-info">
+        <a href="#" class="view-profile" data-user-id="{{ bulletin.user.id }}">{{ bulletin.user.name }}</a>
+        <span class="post-time">{{ bulletin.created_at_ist.strftime('%Y-%m-%d %I:%M:%S %p') }} IST</span>
+      </div>
+    </div>
+    <div class="bulletin-visibility">
+      {% if bulletin.visibility.get('all', False) %}
+        <span class="visibility-tag all-iits">Visible to All IITs</span>
+      {% elif bulletin.visibility.get('my_iit') %}
+        <span class="visibility-tag specific-iit">Visible to {{ bulletin.visibility['my_iit'] }}</span>
+      {% endif %}
+    </div>
+  </div>
+  
+  <h3 class="bulletin-title">{{ bulletin.title }}</h3>
+  <div class="bulletin-content">
+    <p>{{ bulletin.content }}</p>
+  </div>
+  {% if bulletin.image %}
+  <div class="bulletin-image-container">
+    <img src="{{ url_for('static', filename='uploads/' + bulletin.image) }}" alt="Bulletin Image" class="bulletin-image">
+  </div>
+  {% endif %}
+  <div class="bulletin-actions">
+    <button class="upvote-btn" data-bulletin-id="{{ bulletin.id }}">
+      <i class="fas fa-thumbs-up"></i>
+      <span class="upvote-count">{{ bulletin.upvotes.count() }}</span>
+      Upvote
+    </button>
+    {% if user.id == bulletin.user_id or user.user_type.value == 'admin' %}
+    <form action="{{ url_for('delete_bulletin', bulletin_id=bulletin.id) }}" method="POST" class="d-inline">
+      <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this bulletin?')">Delete</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Profile Popup -->
+<div id="profilePopup" class="profile-popup">
+    <div class="profile-popup-content">
+        <span class="close">&times;</span>
+        <div id="profileContent"></div>
+    </div>
+</div>
+
+<!-- Modal for posting bulletins -->
+<div id="postBulletinModal" class="modal">
+    <div class="modal-container">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Post a New Bulletin</h2>
+            <form action="{{ url_for('bulletins') }}" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="content">Content</label>
+                    <textarea id="content" name="content" class="form-control" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="image" class="file-upload-label">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload Image
+                    </label>
+                    <input type="file" id="image" name="image" class="file-upload-input" accept="image/*">
+                    <span id="file-chosen">No file chosen</span>
+                </div>
+                <div class="form-group">
+    <label>Visibility</label>
+    <div class="radio-group">
+        <label>
+            <input type="radio" name="visibility" value="all" checked> All IITs
+        </label>
+        <label>
+            <input type="radio" name="visibility" value="my_iit"> My IIT
+        </label>
+    </div>
+</div>
+                <button type="submit" class="btn btn-primary">Post Bulletin</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const upvoteBtns = document.querySelectorAll('.upvote-btn');
+  upvoteBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+          const bulletinId = this.getAttribute('data-bulletin-id');
+          fetch(`/bulletin/upvote/${bulletinId}`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+          })
+          .then(response => response.json())
+          .then(data => {
+              const upvoteCount = this.querySelector('.upvote-count');
+              upvoteCount.textContent = data.count;
+              if (data.status === 'added') {
+                  this.classList.add('upvoted');
+              } else {
+                  this.classList.remove('upvoted');
+              }
+          })
+          .catch(error => console.error('Error:', error));
+      });
+  });
+
+  // File upload preview
+  const fileInput = document.getElementById('image');
+  const fileChosen = document.getElementById('file-chosen');
+
+  if (fileInput && fileChosen) {
+      fileInput.addEventListener('change', function() {
+          if (this.files && this.files[0]) {
+              fileChosen.textContent = this.files[0].name;
+          } else {
+              fileChosen.textContent = 'No file chosen';
+          }
+      });
+  }
+
+  // Auto-submit filter form
+const filterForm = document.getElementById('filter-form');
+const filterRadios = filterForm.querySelectorAll('input[type="radio"]');
+
+filterRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+        filterForm.submit();
+    });
+});
+
+    // View profile functionality
+const popup = document.getElementById('profilePopup');
+const popupContent = document.getElementById('profileContent');
+const closeBtn = popup.querySelector('.close');
+
+document.querySelectorAll('.view-profile').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const userId = this.getAttribute('data-user-id');
+        fetch(`/user/${userId}/profile`)
+            .then(response => response.json())
+            .then(data => {
+                popupContent.innerHTML = `
+                    <div class="profile-header">
+                        ${data.profile_picture 
+                            ? `<img src="${data.profile_picture}" alt="${data.name}" class="popup-avatar">`
+                            : `<div class="popup-avatar default-avatar"><i class="fas fa-user"></i></div>`
+                        }
+                        <h2>${data.name}</h2>
+                    </div>
+                    <div class="profile-info">
+                        <p><strong>Email:</strong> ${data.email}</p>
+                        <p><strong>IIT:</strong> ${data.iit}</p>
+                        ${data.user_type === 'student' ? `
+                            <p><strong>Branch:</strong> ${data.branch}</p>
+                            <p><strong>Year:</strong> ${data.year}</p>
+                        ` : `
+                            <p><strong>Designation:</strong> ${data.designation}</p>
+                        `}
+                    </div>
+                `;
+                
+                // Position the popup near the clicked link
+                const rect = this.getBoundingClientRect();
+                popup.style.left = `${rect.left}px`;
+                popup.style.top = `${rect.bottom + window.scrollY}px`;
+                
+                popup.style.display = 'block';
+            })
+            .catch(error => console.error('Error:', error));
+    });
+});
+
+if (closeBtn) {
+    closeBtn.onclick = function() {
+        popup.style.display = 'none';
+    }
+}
+
+// Close the popup when clicking outside of it
+window.onclick = function(event) {
+    if (event.target == popup) {
+        popup.style.display = 'none';
+    }
+}
+
+  // Post Bulletin Modal
+  const postBulletinBtn = document.getElementById('postBulletinBtn');
+  const postBulletinModal = document.getElementById('postBulletinModal');
+  const postBulletinClose = postBulletinModal.querySelector('.close');
+
+  if (postBulletinBtn) {
+      postBulletinBtn.onclick = function() {
+          postBulletinModal.style.display = 'block';
+          document.body.style.overflow = 'hidden'; // Prevent body scrolling
+      }
+  }
+
+  if (postBulletinClose) {
+      postBulletinClose.onclick = function() {
+          postBulletinModal.style.display = 'none';
+          document.body.style.overflow = ''; // Restore body scrolling
+      }
+  }
+
+  window.onclick = function(event) {
+      if (event.target == postBulletinModal) {
+          postBulletinModal.style.display = 'none';
+          document.body.style.overflow = ''; // Restore body scrolling
+      }
+      if (event.target == popup) {
+          popup.style.display = 'none';
+      }
+  }
+});
+</script>
+
+<style>
+.default-avatar {
+    background-color: #3a7eff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.modal-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.iit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.iit-grid label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.iit-grid input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+.bulletin-visibility {
+    margin-bottom: 10px;
+}
+
+.visibility-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.visibility-tag.all-iits {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.visibility-tag.specific-iit {
+    background-color: #2196F3;
+    color: white;
+}
+
+.profile-popup {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    background-color: #0d2237;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 300px;
+    width: 100%;
+}
+
+.profile-popup-content {
+    padding: 20px;
+    position: relative;
+}
+
+.profile-popup .close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.popup-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.profile-info p {
+    margin: 5px 0;
+}
+
+@media (max-width: 768px) {
+  .bulletin-item {
+    padding: 15px;
+  }
+
+  .bulletin-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bulletin-poster {
+    margin-bottom: 10px;
+  }
+
+  .bulletin-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bulletin-actions button {
+    margin-bottom: 10px;
+    width: 100%;
+  }
+
+  .profile-popup {
+    max-width: 90%;
+    left: 5% !important;
+    right: 5% !important;
+  }
+
+  .responsive-radio-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .responsive-radio-group label {
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bulletin-title {
+    font-size: 18px;
+  }
+
+  .bulletin-content {
+    font-size: 14px;
+  }
+
+  .visibility-tag {
+    font-size: 10px;
+  }
+}
+
+.bulletin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.bulletin-visibility {
+  margin-left: 10px;
+}
+
+@media (max-width: 768px) {
+  .bulletin-header {
+    flex-direction: column;
+  }
+  
+  .bulletin-visibility {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+}
+</style>
+{% endblock %}
+

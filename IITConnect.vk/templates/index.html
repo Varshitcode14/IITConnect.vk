@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block title %}IITconnect.vk - Welcome{% endblock %}
+
+{% block content %}
+<div class="container landing-container">
+    <h1 class="page-title">Welcome to IITconnect.vk</h1>
+    <p class="landing-description">Connect with fellow IITians across campuses!</p>
+    <div class="landing-buttons">
+        <a href="{{ url_for('signin') }}" class="btn btn-primary">Sign In</a>
+        <a href="{{ url_for('signup') }}" class="btn btn-secondary">Sign Up</a>
+    </div>
+</div>
+{% endblock %}
+

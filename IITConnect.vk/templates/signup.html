@@ -1,0 +1,151 @@
+{% extends "layout.html" %}
+
+{% block title %}IITconnect.vk - Sign Up{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="form-title">Create Your Account</h2>
+    <form id="signup-form" method="POST" action="{{ url_for('signup') }}">
+        <div class="form-group">
+            <label for="email">Email ID</label>
+            <input type="email" id="email" name="email" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-input-container">
+                <input type="password" id="password" name="password" class="form-control" required>
+                <span class="password-toggle" data-target="password">
+                    <i class="fas fa-eye"></i>
+                </span>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <div class="password-input-container">
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
+                <span class="password-toggle" data-target="confirm_password">
+                    <i class="fas fa-eye"></i>
+                </span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="user_type">User Type</label>
+            <select id="user_type" name="user_type" class="form-control" required>
+                <option value="student" selected>Student</option>
+                <option value="designated">Designated Position</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="iit">Select Your IIT</label>
+            <select id="iit" name="iit" class="form-control" required>
+                <option value="">-- Select IIT --</option>
+                <option value="IIT Bombay">IIT Bombay</option>
+                <option value="IIT Delhi">IIT Delhi</option>
+                <option value="IIT Madras">IIT Madras</option>
+                <option value="IIT Kanpur">IIT Kanpur</option>
+                <option value="IIT Kharagpur">IIT Kharagpur</option>
+                <option value="IIT Roorkee">IIT Roorkee</option>
+                <option value="IIT Guwahati">IIT Guwahati</option>
+                <option value="IIT Hyderabad">IIT Hyderabad</option>
+                <option value="IIT BHU">IIT BHU</option>
+                <option value="IIT Indore">IIT Indore</option>
+                <option value="IIT Mandi">IIT Mandi</option>
+                <option value="IIT Ropar">IIT Ropar</option>
+                <option value="IIT Patna">IIT Patna</option>
+                <option value="IIT Gandhinagar">IIT Gandhinagar</option>
+                <option value="IIT Bhubaneswar">IIT Bhubaneswar</option>
+                <option value="IIT Jodhpur">IIT Jodhpur</option>
+                <option value="IIT Tirupati">IIT Tirupati</option>
+                <option value="IIT Dhanbad">IIT Dhanbad (ISM)</option>
+                <option value="IIT Bhilai">IIT Bhilai</option>
+                <option value="IIT Dharwad">IIT Dharwad</option>
+                <option value="IIT Jammu">IIT Jammu</option>
+                <option value="IIT Goa">IIT Goa</option>
+                <option value="IIT Palakkad">IIT Palakkad</option>
+            </select>
+        </div>
+        
+        <div id="student-fields">
+            <div class="form-group">
+                <label for="branch">Branch</label>
+                <select id="branch" name="branch" class="form-control">
+                    <option value="">-- Select Branch --</option>
+                    <option value="Computer Science">Computer Science & Engineering</option>
+                    <option value="Electrical">Electrical Engineering</option>
+                    <option value="Mechanical">Mechanical Engineering</option>
+                    <option value="Civil">Civil Engineering</option>
+                    <option value="Chemical">Chemical Engineering</option>
+                    <option value="Aerospace">Aerospace Engineering</option>
+                    <option value="Metallurgical">Metallurgical & Materials Engineering</option>
+                    <option value="Engineering Physics">Engineering Physics</option>
+                    <option value="Mathematics">Mathematics & Computing</option>
+                    <option value="Biotechnology">Biotechnology</option>
+                    <option value="Industrial">Industrial Engineering</option>
+                    <option value="Production">Production Engineering</option>
+                    <option value="Textile">Textile Engineering</option>
+                    <option value="Mining">Mining Engineering</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="year">Year of Study</label>
+                <select id="year" name="year" class="form-control">
+                    <option value="">-- Select Year --</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                    <option value="5">5th Year</option>
+                    <option value="PhD">PhD</option>
+                    <option value="Alumni">Alumni</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="designated-fields" style="display: none;">
+            <div class="form-group">
+                <label for="designation">Designation</label>
+                <input type="text" id="designation" name="designation" class="form-control" placeholder="e.g., Club Secretary, Event Coordinator">
+            </div>
+            <div class="form-group">
+                <label for="verification_mobile">Verification Mobile Number</label>
+                <input type="tel" id="verification_mobile" name="verification_mobile" class="form-control" placeholder="Enter your mobile number">
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Create Account</button>
+    </form>
+</div>
+
+<script>
+    function toggleFields() {
+        var userType = document.getElementById('user_type').value;
+        var studentFields = document.getElementById('student-fields');
+        var designatedFields = document.getElementById('designated-fields');
+        
+        if (userType === 'student') {
+            studentFields.style.display = 'block';
+            designatedFields.style.display = 'none';
+        } else {
+            studentFields.style.display = 'none';
+            designatedFields.style.display = 'block';
+        }
+    }
+
+    document.getElementById('user_type').addEventListener('change', toggleFields);
+    
+    // Call the function on page load to set the initial state
+    toggleFields();
+</script>
+{% endblock %}
+

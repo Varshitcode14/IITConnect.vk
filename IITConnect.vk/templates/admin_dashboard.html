@@ -1,0 +1,113 @@
+{% extends "layout.html" %}
+
+{% block title %}IITconnect.vk - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container admin-dashboard">
+    <h1 class="page-title">Admin Dashboard</h1>
+    
+    <nav class="admin-nav">
+        <ul>
+            <li><a href="{{ url_for('admin_dashboard', section='pending') }}" class="{{ 'active' if section == 'pending' else '' }}">Pending Requests</a></li>
+            <li><a href="{{ url_for('admin_dashboard', section='approved') }}" class="{{ 'active' if section == 'approved' else '' }}">Approved Requests</a></li>
+            <li><a href="{{ url_for('admin_dashboard', section='declined') }}" class="{{ 'active' if section == 'declined' else '' }}">Declined Requests</a></li>
+        </ul>
+    </nav>
+
+    {% if section == 'pending' %}
+    <div class="dashboard-section">
+        <h2>Pending Approval Requests</h2>
+        {% if pending_requests %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>IIT</th>
+                        <th>Designation</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in pending_requests %}
+                        <tr>
+                            <td>{{ request.user.name }}</td>
+                            <td>{{ request.user.email }}</td>
+                            <td>{{ request.user.iit }}</td>
+                            <td>{{ request.user.designation }}</td>
+                            <td class="action-buttons">
+                                <a href="{{ url_for('approve_request', request_id=request.id) }}" class="btn btn-success">Approve</a>
+                                <a href="{{ url_for('reject_request', request_id=request.id) }}" class="btn btn-danger">Reject</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-data">No pending approval requests.</p>
+        {% endif %}
+    </div>
+    {% elif section == 'approved' %}
+    <div class="dashboard-section">
+        <h2>Approved Requests</h2>
+        {% if approved_requests %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>IIT</th>
+                        <th>Designation</th>
+                        <th>Approval Date (IST)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in approved_requests %}
+                        <tr>
+                            <td>{{ request.user.name }}</td>
+                            <td>{{ request.user.email }}</td>
+                            <td>{{ request.user.iit }}</td>
+                            <td>{{ request.user.designation }}</td>
+                            <td>{{ request.ist_updated_at.strftime('%Y-%m-%d %I:%M:%S %p') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-data">No approved requests.</p>
+        {% endif %}
+    </div>
+    {% elif section == 'declined' %}
+    <div class="dashboard-section">
+        <h2>Declined Requests</h2>
+        {% if declined_requests %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>IIT</th>
+                        <th>Designation</th>
+                        <th>Rejection Date (IST)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in declined_requests %}
+                        <tr>
+                            <td>{{ request.user.name }}</td>
+                            <td>{{ request.user.email }}</td>
+                            <td>{{ request.user.iit }}</td>
+                            <td>{{ request.user.designation }}</td>
+                            <td>{{ request.ist_updated_at.strftime('%Y-%m-%d %I:%M:%S %p') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-data">No declined requests.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

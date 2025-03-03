@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block title %}IITconnect.vk - User Profile{% endblock %}
+
+{% block content %}
+<div class="container profile-container">
+    <h1 class="page-title">User Profile</h1>
+    <div class="profile-content">
+        <form method="POST" action="{{ url_for('profile') }}" enctype="multipart/form-data">
+            <div class="profile-picture-container">
+                <div class="profile-picture-wrapper">
+                    {% if user.profile_picture and user.profile_picture != 'default_profile.png' %}
+                        <img id="profile-picture-preview" src="{{ url_for('static', filename='uploads/' + user.profile_picture) }}" alt="Profile Picture" class="profile-picture">
+                    {% else %}
+                        <div id="profile-picture-preview" class="profile-picture">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="profile-picture-upload">
+                    <label for="profile_picture">Change Profile Picture</label>
+                    <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" class="form-control" value="{{ user.name }}" required>
+            </div>
+            <div class="form-group">
+                <label for="user_type">User Type</label>
+                <input type="text" id="user_type" name="user_type" class="form-control" value="{{ user.user_type.value }}" readonly>
+            </div>
+            <div class="form-group">
+                <label for="iit">IIT</label>
+                <input type="text" id="iit" name="iit" class="form-control" value="{{ user.iit }}" readonly>
+            </div>
+            {% if user.user_type.value == 'student' %}
+                <div class="form-group">
+                    <label for="branch">Branch</label>
+                    <select id="branch" name="branch" class="form-control" required>
+                        <option value="">-- Select Branch --</option>
+                        <option value="Computer Science" {% if user.branch == 'Computer Science' %}selected{% endif %}>Computer Science & Engineering</option>
+                        <option value="Electrical" {% if user.branch == 'Electrical' %}selected{% endif %}>Electrical Engineering</option>
+                        <option value="Mechanical" {% if user.branch == 'Mechanical' %}selected{% endif %}>Mechanical Engineering</option>
+                        <option value="Civil" {% if user.branch == 'Civil' %}selected{% endif %}>Civil Engineering</option>
+                        <option value="Chemical" {% if user.branch == 'Chemical' %}selected{% endif %}>Chemical Engineering</option>
+                        <option value="Aerospace" {% if user.branch == 'Aerospace' %}selected{% endif %}>Aerospace Engineering</option>
+                        <option value="Metallurgical" {% if user.branch == 'Metallurgical' %}selected{% endif %}>Metallurgical & Materials Engineering</option>
+                        <option value="Engineering Physics" {% if user.branch == 'Engineering Physics' %}selected{% endif %}>Engineering Physics</option>
+                        <option value="Mathematics" {% if user.branch == 'Mathematics' %}selected{% endif %}>Mathematics & Computing</option>
+                        <option value="Biotechnology" {% if user.branch == 'Biotechnology' %}selected{% endif %}>Biotechnology</option>
+                        <option value="Industrial" {% if user.branch == 'Industrial' %}selected{% endif %}>Industrial Engineering</option>
+                        <option value="Production" {% if user.branch == 'Production' %}selected{% endif %}>Production Engineering</option>
+                        <option value="Textile" {% if user.branch == 'Textile' %}selected{% endif %}>Textile Engineering</option>
+                        <option value="Mining" {% if user.branch == 'Mining' %}selected{% endif %}>Mining Engineering</option>
+                        <option value="Other" {% if user.branch == 'Other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="year">Year</label>
+                    <select id="year" name="year" class="form-control" required>
+                        <option value="1" {% if user.year == '1' %}selected{% endif %}>1st Year</option>
+                        <option value="2" {% if user.year == '2' %}selected{% endif %}>2nd Year</option>
+                        <option value="3" {% if user.year == '3' %}selected{% endif %}>3rd Year</option>
+                        <option value="4" {% if user.year == '4' %}selected{% endif %}>4th Year</option>
+                        <option value="5" {% if user.year == '5' %}selected{% endif %}>5th Year</option>
+                        <option value="PhD" {% if user.year == 'PhD' %}selected{% endif %}>PhD</option>
+                        <option value="Alumni" {% if user.year == 'Alumni' %}selected{% endif %}>Alumni</option>
+                    </select>
+                </div>
+            {% elif user.user_type.value == 'designated' %}
+                <div class="form-group">
+                    <label for="designation">Designation</label>
+                    <input type="text" id="designation" name="designation" class="form-control" value="{{ user.designation }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="verification_mobile">Verification Mobile</label>
+                    <input type="text" id="verification_mobile" name="verification_mobile" class="form-control" value="{{ user.verification_mobile }}" readonly>
+                </div>
+            {% endif %}
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('profile_picture').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('profile-picture-preview');
+                if (preview.tagName.toLowerCase() === 'img') {
+                    preview.src = e.target.result;
+                } else {
+                    // If it's a div (for the icon), replace it with an img
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.id = 'profile-picture-preview';
+                    img.className = 'profile-picture';
+                    img.alt = 'Profile Picture';
+                    preview.parentNode.replaceChild(img, preview);
+                }
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}
+

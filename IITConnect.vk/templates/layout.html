@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}IITconnect.vk{% endblock %}</title>
+    <link href='https://fonts.googleapis.com/css?family=Outfit:400,600,700' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay"></div>
+    <header>
+        <nav>
+            <div class="logo">IITconnect.vk</div>
+            {% if 'user_id' in session and request.endpoint not in ['landing', 'signin', 'signup'] %}
+                <button id="mobileMenuToggle" class="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <ul id="navMenu" class="nav-menu">
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('bulletins') }}">Bulletins</a></li>
+                    <li><a href="{{ url_for('tweets') }}">Tweets</a></li>
+                    <li><a href="{{ url_for('connect') }}">Connect</a></li>
+                    <li><a href="{{ url_for('projects') }}">Projects</a></li>
+                    <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                    <li><a href="{{ url_for('signout') }}">Sign Out</a></li>
+                </ul>
+            {% endif %}
+        </nav>
+    </header>
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    {% if 'user_id' not in session and request.endpoint in ['landing', 'signin', 'signup'] %}
+        <div class="auth-links">
+            {% if request.endpoint != 'signin' %}
+                <a href="{{ url_for('signin') }}" class="btn btn-primary">Sign In</a>
+            {% endif %}
+            {% if request.endpoint != 'signup' %}
+                <a href="{{ url_for('signup') }}" class="btn btn-secondary">Sign Up</a>
+            {% endif %}
+        </div>
+    {% endif %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const navMenu = document.getElementById('navMenu');
+        const overlay = document.getElementById('mobileMenuOverlay');
+        const body = document.body;
+
+        function toggleMenu() {
+            navMenu.classList.toggle('show');
+            mobileMenuToggle.classList.toggle('active');
+            overlay.classList.toggle('show');
+            body.classList.toggle('menu-open');
+        }
+
+        if (mobileMenuToggle && navMenu) {
+            mobileMenuToggle.addEventListener('click', toggleMenu);
+
+            // Close menu when clicking overlay
+            overlay.addEventListener('click', toggleMenu);
+
+            // Close menu when clicking a link
+            navMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (navMenu.classList.contains('show')) {
+                        toggleMenu();
+                    }
+                });
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                const isClickInside = navMenu.contains(event.target) || mobileMenuToggle.contains(event.target);
+                if (!isClickInside && navMenu.classList.contains('show')) {
+                    toggleMenu();
+                }
+            });
+
+            // Close menu when window is resized to larger screen
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768 && navMenu.classList.contains('show')) {
+                    toggleMenu();
+                }
+            });
+        }
+    });
+    </script>
+</body>
+</html>
+

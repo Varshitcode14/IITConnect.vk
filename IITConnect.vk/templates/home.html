@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block title %}IITconnect.vk - Home{% endblock %}
+
+{% block content %}
+<div class="container home-container">
+    <h1 class="page-title">Welcome to IITconnect.vk</h1>
+    
+    <div class="grid-container">
+        <a href="{{ url_for('bulletins') }}" class="grid-item bulletins">
+            <h2>Bulletins</h2>
+            <ul class="bulletin-list">
+                <li>Important announcement regarding upcoming events</li>
+                <li>New research opportunities available</li>
+                <li>Campus update: Library hours extended</li>
+            </ul>
+        </a>
+        
+        <a href="{{ url_for('tweets') }}" class="grid-item tweets">
+            <h2>Tweets</h2>
+            <div class="tweet">
+                <p>@IITOfficial: Congratulations to our students for winning the national robotics competition! #ProudMoment</p>
+            </div>
+            <div class="tweet">
+                <p>@TechClub: Don't miss our upcoming workshop on AI and Machine Learning. Register now!</p>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('connect') }}" class="grid-item connect">
+            <h2>Connect</h2>
+            <ul class="connect-list">
+                <li>Find Study Groups</li>
+                <li>Join Research Teams</li>
+                <li>Mentor/Mentee Program</li>
+            </ul>
+        </a>
+        
+        <a href="{{ url_for('projects') }}" class="grid-item projects">
+            <h2>Ongoing Projects</h2>
+            <ul class="project-list">
+                <li>Smart City Initiative</li>
+                <li>Renewable Energy Research</li>
+                <li>AI in Healthcare</li>
+            </ul>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
